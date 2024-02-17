@@ -1,0 +1,7 @@
+loguru>=0.7.2
+pyuseragents>=1.0.5
+aiofiles>=23.2.1
+web3>=6.15.1
+curl-cffi>=0.5.9
+eth-account>=0.11.0
+better-proxy>=1.1.0
