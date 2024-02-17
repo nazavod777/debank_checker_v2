@@ -1,5 +1,11 @@
+import asyncio
+from sys import platform
+
 from custom_types import FormattedAccount
 from .append_file import append_file
+
+if platform == 'win32':
+    asyncio.set_event_loop_policy(asyncio.WindowsSelectorEventLoopPolicy())
 
 
 async def format_result(account_data: FormattedAccount,
