@@ -1,4 +1,5 @@
 import asyncio
+from sys import platform
 
 from curl_cffi.requests import AsyncSession
 from curl_cffi.requests.models import Response
@@ -8,6 +9,9 @@ from pyuseragents import random as random_useragent
 from custom_types import FormattedAccount
 from utils import loader, append_file, get_proxy, format_result
 from utils.misc import set_headers
+
+if platform == 'win32':
+    asyncio.set_event_loop_policy(asyncio.WindowsSelectorEventLoopPolicy())
 
 
 class Parser:
