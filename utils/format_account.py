@@ -13,6 +13,7 @@ Account.enable_unaudited_hdwallet_features()
 
 
 def format_account(account_data: str) -> FormattedAccount | None:
+    split_words = re.split(r'[,.\-_;:\\/| \s]\s*', account_data)
     account_data_words = re.findall(r'\b\w+\b', account_data)
     account_data_sorted_mnemonic_words = [word for word in account_data_words if word in predefined_words]
 
@@ -32,7 +33,7 @@ def format_account(account_data: str) -> FormattedAccount | None:
         except (ValueError, ValidationError):
             pass
 
-    for current_target_private_key in account_data_words:
+    for current_target_private_key in split_words:
         try:
             address = Account.from_key(private_key=current_target_private_key).address
 
@@ -40,7 +41,7 @@ def format_account(account_data: str) -> FormattedAccount | None:
         except (ValueError, ValidationError):
             pass
 
-    for current_target_address in account_data_words:
+    for current_target_address in split_words:
         try:
             address = w3.to_checksum_address(current_target_address)
 
