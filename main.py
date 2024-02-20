@@ -40,6 +40,9 @@ if __name__ == '__main__':
 
     logger.success(f'Successfully Loaded {proxy_count} Proxies')
 
+    threads: int = int(input('\nThreads: '))
+    loader.semaphore = asyncio.Semaphore(value=threads)
+
     with open(file='data/accounts.txt',
               mode='r',
               encoding='utf-8-sig') as file:
@@ -49,13 +52,11 @@ if __name__ == '__main__':
             if not data:
                 break
 
-            accounts_list: list[str | FormattedAccount] = [row.strip().rstrip() for row in file]
-            accounts_list: list[str | FormattedAccount] = list(set(accounts_list))
-            accounts_list: list[FormattedAccount] = [format_account(account_data=row) for row in accounts_list]
-            accounts_list: list[FormattedAccount] = [current_account for current_account in accounts_list if
-                                                     current_account]
-
-            loader.semaphore = asyncio.Semaphore(value=len(accounts_list))
+            accounts_list: list[FormattedAccount] = [current_account for current_account in
+                                                     [format_account(account_data=row)
+                                                      for row in list(set([row.strip().rstrip()
+                                                                           for row in data.split('\n')]))]
+                                                     if current_account]
 
             logger.info(f'Loaded Accounts: {len(accounts_list)}')
 
