@@ -6,8 +6,6 @@ from sys import stderr, platform
 from loguru import logger
 
 from core import start_parser
-from custom_types import FormattedAccount
-from utils import format_account
 from utils import loader
 
 if platform == 'win32':
@@ -53,11 +51,8 @@ if __name__ == '__main__':
             if not data:
                 break
 
-            accounts_list: list[FormattedAccount] = [current_account for current_account in
-                                                     [format_account(account_data=row)
-                                                      for row in list(set([row.strip().rstrip()
-                                                                           for row in data.split('\n')]))]
-                                                     if current_account]
+            accounts_list: list[str] = [row for row in list(set([row.strip().rstrip()
+                                                                 for row in data.split('\n')]))]
 
             logger.info(f'Loaded Accounts: {len(accounts_list)}')
 
