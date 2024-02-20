@@ -41,6 +41,7 @@ if __name__ == '__main__':
     logger.success(f'Successfully Loaded {proxy_count} Proxies')
 
     threads: int = int(input('\nThreads: '))
+    print()
     loader.semaphore = asyncio.Semaphore(value=threads)
 
     with open(file='data/accounts.txt',
