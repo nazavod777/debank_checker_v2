@@ -2,6 +2,7 @@ import re
 
 from eth_account import Account
 from eth_utils.exceptions import ValidationError
+from loguru import logger
 from web3.auto import w3
 
 from custom_types import FormattedAccount
@@ -47,6 +48,6 @@ def format_account(account_data: str) -> FormattedAccount | None:
         except (ValueError, ValidationError):
             pass
 
-    print('err')
-    input(account_data)
+    logger.error(f'{account_data} | Invalid Address/Mnemonic/Key')
+
     return None
