@@ -41,6 +41,7 @@ if __name__ == '__main__':
     threads: int = int(input('\nThreads: '))
     print()
     loader.semaphore = asyncio.Semaphore(value=threads)
+    last_account_data: str = ''
 
     with open(file='data/accounts.txt',
               mode='r',
@@ -52,7 +53,10 @@ if __name__ == '__main__':
                 break
 
             accounts_list: list[str] = [row for row in list(set([row.strip().rstrip()
-                                                                 for row in data.split('\n')]))]
+                                                                 for row in data.split('\n')])) if row]
+            accounts_list[0]: str = f'{last_account_data}{accounts_list[0]}'
+            last_account_data: str = accounts_list[-1]
+            del accounts_list[-1]
 
             logger.info(f'Loaded Accounts: {len(accounts_list)}')
 
