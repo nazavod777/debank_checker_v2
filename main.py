@@ -1,4 +1,5 @@
 import asyncio
+from multiprocessing.dummy import Pool
 from os import mkdir
 from os.path import exists
 from sys import stderr, platform
@@ -6,7 +7,8 @@ from sys import stderr, platform
 from loguru import logger
 
 from core import start_parser
-from utils import loader
+from custom_types import FormattedAccount
+from utils import loader, format_account
 
 if platform == 'win32':
     asyncio.set_event_loop_policy(asyncio.WindowsSelectorEventLoopPolicy())
@@ -21,7 +23,7 @@ logger.add(stderr, format='<white>{time:HH:mm:ss}</white>'
 async def main() -> None:
     tasks: list[asyncio.Task] = [
         asyncio.create_task(coro=start_parser(account_data=current_account))
-        for current_account in accounts_list
+        for current_account in formatted_accounts_list
     ]
 
     await asyncio.gather(*tasks)
@@ -50,6 +52,19 @@ if __name__ == '__main__':
             data = file.read(16768)
 
             if not data:
+                formatted_account: FormattedAccount | None = format_account(account_data=last_account_data)
+
+                if formatted_account:
+                    formatted_accounts_list: list[FormattedAccount] = [formatted_account]
+
+                    try:
+                        import uvloop
+
+                        uvloop.run(main())
+
+                    except ModuleNotFoundError:
+                        asyncio.run(main())
+
                 break
 
             accounts_list: list[str] = [row for row in list(set([row.strip().rstrip()
@@ -57,6 +72,11 @@ if __name__ == '__main__':
             accounts_list[0]: str = f'{last_account_data}{accounts_list[0]}'
             last_account_data: str = accounts_list[-1]
             del accounts_list[-1]
+
+            with Pool(processes=threads) as executor:
+                formatted_accounts_list: list[FormattedAccount] = [current_account for current_account
+                                                                   in executor.map(format_account, accounts_list)
+                                                                   if current_account]
 
             logger.info(f'Loaded Accounts: {len(accounts_list)}')
 
