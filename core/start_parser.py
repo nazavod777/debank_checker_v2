@@ -280,22 +280,17 @@ class Parser:
                             pools_balances=pools_balances)
 
 
-async def start_parser(account_data: str) -> None:
+async def start_parser(account_data: FormattedAccount) -> None:
     async with loader.semaphore:
-        formatted_account: FormattedAccount | None = format_account(account_data=account_data)
-
-        if not formatted_account:
-            return
-
         try:
-            await Parser(account_data=formatted_account).start_parser()
+            await Parser(account_data=account_data).start_parser()
 
         except Exception as error:
-            logger.error(f'{formatted_account.address} | Unexpected Error: {error}')
+            logger.error(f'{account_data.address} | Unexpected Error: {error}')
 
             async with asyncio.Lock():
                 await append_file(
                     file_path='results/errors.txt',
-                    file_content=f'{formatted_account.address}:{formatted_account.mnemonic if formatted_account.mnemonic else ""}:'
-                                 f'{formatted_account.private_key if formatted_account.private_key else ""}\n'
+                    file_content=f'{account_data.address}:{account_data.mnemonic if account_data.mnemonic else ""}:'
+                                 f'{account_data.private_key if account_data.private_key else ""}\n'
                 )
