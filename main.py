@@ -1,6 +1,6 @@
 import asyncio
 from multiprocessing.dummy import Pool
-from os import mkdir
+from os import mkdir,SEEK_CUR, ftruncate
 from os.path import exists
 from sys import stderr, platform
 
@@ -46,7 +46,7 @@ if __name__ == '__main__':
     last_account_data: str = ''
 
     with open(file='data/accounts.txt',
-              mode='r',
+              mode='r+',
               encoding='utf-8-sig') as file:
         while True:
             data = file.read(16768)
@@ -87,6 +87,16 @@ if __name__ == '__main__':
 
             except ModuleNotFoundError:
                 asyncio.run(main())
+
+            file.seek(0, SEEK_CUR)
+            remaining_data = file.read()
+
+            file.seek(0)
+            file.write(remaining_data)
+            file.truncate()
+
+            file.seek(0)
+            ftruncate(file.fileno(), len(remaining_data))
 
     logger.success('Work has been successfully completed')
     input('\nPress Enter to Exit..')
