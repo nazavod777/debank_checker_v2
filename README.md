@@ -16,6 +16,9 @@
 ### data/constants.py  
 - _Не трогать_  
 
+### data/config.py  
+- _**ACCOUNT_PATH_INDEX** - Количество аккаунтов для генерации с одной сид-фразы_
+
 ### data/accounts.txt  
 - Аккаунты в любом удобном формате  
 
