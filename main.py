@@ -1,6 +1,6 @@
 import asyncio
 from multiprocessing.dummy import Pool
-from os import mkdir,SEEK_CUR, ftruncate
+from os import mkdir
 from os.path import exists
 from sys import stderr, platform
 
@@ -21,6 +21,8 @@ logger.add(stderr, format='<white>{time:HH:mm:ss}</white>'
 
 
 async def main() -> None:
+    loader.semaphore = asyncio.Semaphore(value=threads)
+
     tasks: list[asyncio.Task] = [
         asyncio.create_task(coro=start_parser(account_data=current_account))
         for current_account in formatted_accounts_list
@@ -41,8 +43,6 @@ if __name__ == '__main__':
     logger.success(f'Successfully Loaded {proxy_count} Proxies')
 
     threads: int = int(input('\nThreads: '))
-    print()
-    loader.semaphore = asyncio.Semaphore(value=threads)
     last_account_data: str = ''
 
     with open(file='data/accounts.txt',
@@ -52,10 +52,14 @@ if __name__ == '__main__':
             data = file.read(16768)
 
             if not data:
-                formatted_account: FormattedAccount | None = format_account(account_data=last_account_data)
+                if not last_account_data:
+                    break
 
-                if formatted_account:
-                    formatted_accounts_list: list[FormattedAccount] = [formatted_account]
+                formatted_accounts_list: list[FormattedAccount] = format_account(account_data=last_account_data)
+
+                if formatted_accounts_list:
+                    print()
+                    logger.info(f'Loaded Accounts: {len(formatted_accounts_list)}')
 
                     try:
                         import uvloop
@@ -73,11 +77,17 @@ if __name__ == '__main__':
             last_account_data: str = accounts_list[-1]
             del accounts_list[-1]
 
-            with Pool(processes=threads) as executor:
-                formatted_accounts_list: list[FormattedAccount] = [current_account for current_account
-                                                                   in executor.map(format_account, accounts_list)
-                                                                   if current_account]
+            formatted_accounts_list: list[FormattedAccount] = []
 
+            with Pool(processes=threads) as executor:
+                checked_accounts_list: list[list[FormattedAccount]] = [current_account for current_account
+                                                                       in executor.map(format_account, accounts_list)
+                                                                       if current_account]
+
+            for current_checked_account in checked_accounts_list:
+                formatted_accounts_list.extend(current_checked_account)
+
+            print()
             logger.info(f'Loaded Accounts: {len(accounts_list)}')
 
             try:
@@ -87,16 +97,6 @@ if __name__ == '__main__':
 
             except ModuleNotFoundError:
                 asyncio.run(main())
-
-            file.seek(0, SEEK_CUR)
-            remaining_data = file.read()
-
-            file.seek(0)
-            file.write(remaining_data)
-            file.truncate()
-
-            file.seek(0)
-            ftruncate(file.fileno(), len(remaining_data))
 
     logger.success('Work has been successfully completed')
     input('\nPress Enter to Exit..')
