@@ -3,6 +3,7 @@ from sys import platform
 
 from custom_types import FormattedAccount
 from .append_file import append_file
+from utils import loader
 
 if platform == 'win32':
     asyncio.set_event_loop_policy(asyncio.WindowsSelectorEventLoopPolicy())
@@ -11,7 +12,8 @@ if platform == 'win32':
 async def format_result(account_data: FormattedAccount,
                         total_usd_balance: float,
                         token_balances: dict,
-                        pools_balances: dict) -> bool:
+                        pools_balances: dict,
+                        nfts_count: int) -> bool:
     tokens_balance: float = 0
     pools_balance: float = 0
 
@@ -44,12 +46,20 @@ async def format_result(account_data: FormattedAccount,
     total_usd_balance: float = round(number=total_usd_balance,
                                      ndigits=2)
 
-    if total_usd_balance <= 0:
+    async with asyncio.Lock():
         await append_file(
-            file_path='results/zero_balance.txt',
-            file_content=f'{account_data_for_file} | Total Balance: ${total_usd_balance} | '
-                         f'Tokens Balance: ${tokens_balance} | Pools Balance: ${pools_balance}\n'
+            file_path='results/with_nft.txt',
+            file_content=f'{account_data_for_file} | {nfts_count} NFT\'s\n'
         )
+
+    if total_usd_balance <= 0:
+        async with asyncio.Lock():
+            await append_file(
+                file_path='results/zero_balance.txt',
+                file_content=f'{account_data_for_file} | Total Balance: ${total_usd_balance} | '
+                             f'Tokens Balance: ${tokens_balance} | Pools Balance: ${pools_balance}\n'
+            )
+
         return True
 
     elif total_usd_balance < 1:
@@ -63,8 +73,11 @@ async def format_result(account_data: FormattedAccount,
     else:
         file_path = 'results/1000_plus_balances.txt'
 
-    await append_file(
-        file_path=file_path,
-        file_content=f'{account_data_for_file} | Total Balance: ${total_usd_balance} | '
-                     f'Tokens Balance: ${tokens_balance} | Pools Balance: ${pools_balance}\n'
-    )
+    async with asyncio.Lock():
+        await append_file(
+            file_path=file_path,
+            file_content=f'{account_data_for_file} | Total Balance: ${total_usd_balance} | '
+                         f'Tokens Balance: ${tokens_balance} | Pools Balance: ${pools_balance}\n'
+        )
+
+    return True
