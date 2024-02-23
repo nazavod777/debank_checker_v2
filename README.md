@@ -6,7 +6,7 @@
 ### _Часть кода спизжена у [@cryptogovnozavod](https://t.me/cryptogovnozavod)_
 
 ### Функции: 
-* _Парсинг Общего баланса (+ Pool Balance / + Token Balance)_
+* _Парсинг Общего баланса (+ Pool Balance / + Token Balance / + NFT Count)_
 * _Многопоточность_
 * _Поддержка Proxy (http / https / socks4/ socks5)_
 * _Сортировка результатов по балансу (0, 0-1, 100-500, 500-1000, 1000+ $)_
